@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <time.h> //Para o srand
 #include <windows.h> //Para o Sleep
 
@@ -9,7 +10,7 @@
 int tabuleiroCartas[TAMANHO_TABULEIRO][TAMANHO_TABULEIRO]={0}; //Inicializa tudo com zero
 int tabuleiroPosicoes[TAMANHO_TABULEIRO][TAMANHO_TABULEIRO];
 
-void exibirMenuPrincipal(void);
+int exibirMenuPrincipal(void);
 void jogarJogoMemoria(void);
 void escolherNivelJogo(void);
 void inicializarTabuleiroCartas(void);
@@ -17,7 +18,8 @@ int gerarSimboloValido(void);
 int gerarSimboloAleatorio(void);
 int calcularQuantidadeSimbolos(int tamanhoMatriz);
 int gerarNumeroAleatorio(int menorNumeroAleatorio, int maiorNumeroAleatorio);
-int contarRepeticoesMatriz(int matriz[][TAMANHO_TABULEIRO], int simboloProcurado);
+int contarRepeticoesTabuleiro(int simboloProcurado);
+int contarZerosTabuleiro(void);
 void inicializarTabuleiroPosicoes(void);
 void escolherCarta(void);
 void exibirCartasTabuleiro(int primeiraCartaEscolhida, int segundaCartaEscolhida);
@@ -26,16 +28,18 @@ int calcularColunaEscolhida(int posicaoEscolhida);
 int verificarCartasEscolhidas(int primeiraCartaEscolhida, int segundaCartaEscolhida);
 
 int main(void){
+	int i;
     srand(time(NULL));
-    exibirMenuPrincipal();
+    while(exibirMenuPrincipal()==1);
     return 0;
 }
 
-void exibirMenuPrincipal(void){
+int exibirMenuPrincipal(void){
     int opcaoMenuJogador;
     system("cls");
     printf("1 - Jogar\n2 - Nivel\n3 - Continuar\n4 - Rank\n5 - Sair\nEscolha uma opcao: ");
     scanf("%d", &opcaoMenuJogador);
+    fflush(stdin);
     switch(opcaoMenuJogador){
     case 1:
         jogarJogoMemoria();
@@ -48,20 +52,21 @@ void exibirMenuPrincipal(void){
     case 4:
         break;
     case 5:
-        exit(0);
+        return 0;
         break;
     default: 
         printf("Escolha invalida");
+        system("pause");
         break;
     }
-    exibirMenuPrincipal();
+    return 1;
 }
 
 void jogarJogoMemoria(){
     int tentativasJogador=0;
     inicializarTabuleiroCartas();
     inicializarTabuleiroPosicoes();
-    while(contarRepeticoesMatriz(tabuleiroPosicoes, 0)<(TAMANHO_TABULEIRO*TAMANHO_TABULEIRO)){
+    while(contarZerosTabuleiro()<(TAMANHO_TABULEIRO*TAMANHO_TABULEIRO)){
         escolherCarta();
         tentativasJogador++;
     }
@@ -71,14 +76,17 @@ void jogarJogoMemoria(){
 
 void escolherNivelJogo(void){
     int opcaoNivelJogador;
+    int i;
     system("cls");
     printf("1 - Facil\n2 - Medio\n3 - Dificil\nEscolha um nivel: ");
     scanf("%d", &opcaoNivelJogador);
+    fflush(stdin);
 }
 
 void inicializarTabuleiroCartas(){
-    for(int i=0; i<TAMANHO_TABULEIRO; i++){
-        for(int j=0; j<TAMANHO_TABULEIRO; j++){
+    int i, j;
+    for(i=0; i<TAMANHO_TABULEIRO; i++){
+        for(j=0; j<TAMANHO_TABULEIRO; j++){
             tabuleiroCartas[i][j]=gerarSimboloValido();
         }
     }
@@ -88,7 +96,7 @@ int gerarSimboloValido(){
     int simboloAleatorio;
     do{
         simboloAleatorio=gerarSimboloAleatorio();
-    }while(contarRepeticoesMatriz(tabuleiroCartas, simboloAleatorio)>=2); //2 é a quantidade de vezes que um numero deve se repetir
+    }while(contarRepeticoesTabuleiro(simboloAleatorio)>=2); //2 é a quantidade de vezes que um numero deve se repetir
     return simboloAleatorio;
 }
 
@@ -105,11 +113,25 @@ int gerarNumeroAleatorio(int menorNumeroAleatorio, int maiorNumeroAleatorio){
     return menorNumeroAleatorio+rand()%(maiorNumeroAleatorio-menorNumeroAleatorio+1);
 }
 
-int contarRepeticoesMatriz(int matriz[][TAMANHO_TABULEIRO], int simboloProcurado){
+int contarRepeticoesTabuleiro(int simboloProcurado){
     int count=0;
-    for(int i=0; i<TAMANHO_TABULEIRO; i++){
-        for(int j=0; j<TAMANHO_TABULEIRO; j++){
-            if(matriz[i][j]==simboloProcurado){
+    int i, j;
+    for(i=0; i<TAMANHO_TABULEIRO; i++){
+        for(j=0; j<TAMANHO_TABULEIRO; j++){
+            if(tabuleiroCartas[i][j]==simboloProcurado){
+                count++;
+            }
+        }
+    }
+    return count;
+}
+
+int contarZerosTabuleiro(){
+    int count=0;
+    int i, j;
+    for(i=0; i<TAMANHO_TABULEIRO; i++){
+        for(j=0; j<TAMANHO_TABULEIRO; j++){
+            if(tabuleiroPosicoes[i][j]==0){
                 count++;
             }
         }
@@ -118,8 +140,9 @@ int contarRepeticoesMatriz(int matriz[][TAMANHO_TABULEIRO], int simboloProcurado
 }
 
 void inicializarTabuleiroPosicoes(){
-    for(int i=0; i<TAMANHO_TABULEIRO; i++){
-        for(int j=0; j<TAMANHO_TABULEIRO; j++){
+    int i, j;
+    for(i=0; i<TAMANHO_TABULEIRO; i++){
+        for(j=0; j<TAMANHO_TABULEIRO; j++){
             tabuleiroPosicoes[i][j]=((i+1)*10)+(j+1);
         }
     }
@@ -142,8 +165,9 @@ void escolherCarta(){ //Refatorar
 }
 
 void exibirCartasTabuleiro(int primeiraCartaEscolhida, int segundaCartaEscolhida){
-    for(int i=0; i<TAMANHO_TABULEIRO; i++){
-        for(int j=0; j<TAMANHO_TABULEIRO; j++){
+    int i, j;
+    for(i=0; i<TAMANHO_TABULEIRO; i++){
+        for(j=0; j<TAMANHO_TABULEIRO; j++){
             if(tabuleiroPosicoes[i][j]==primeiraCartaEscolhida || tabuleiroPosicoes[i][j]==segundaCartaEscolhida || tabuleiroPosicoes[i][j]==0){
                 printf("%5c", tabuleiroCartas[i][j]);
             }
