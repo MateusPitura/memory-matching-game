@@ -9,12 +9,15 @@
 int tabuleiroCartas[TAMANHO_TABULEIRO][TAMANHO_TABULEIRO]={0}; //Inicializa tudo com zero
 int tabuleiroPosicoes[TAMANHO_TABULEIRO][TAMANHO_TABULEIRO];
 
+void exibirMenuPrincipal(void);
+void jogarJogoMemoria(void);
+void escolherNivelJogo(void);
 void inicializarTabuleiroCartas(void);
 int gerarSimboloValido(void);
 int gerarSimboloAleatorio(void);
 int calcularQuantidadeSimbolos(int tamanhoMatriz);
 int gerarNumeroAleatorio(int menorNumeroAleatorio, int maiorNumeroAleatorio);
-int contarRepeticoesTabuleiro(int simboloProcurado);
+int contarRepeticoesMatriz(int matriz[][TAMANHO_TABULEIRO], int simboloProcurado);
 void inicializarTabuleiroPosicoes(void);
 void escolherCarta(void);
 void exibirCartasTabuleiro(int primeiraCartaEscolhida, int segundaCartaEscolhida);
@@ -22,14 +25,55 @@ int calcularLinhaEscolhida(int posicaoEscolhida);
 int calcularColunaEscolhida(int posicaoEscolhida);
 int verificarCartasEscolhidas(int primeiraCartaEscolhida, int segundaCartaEscolhida);
 
-int main(){
+int main(void){
     srand(time(NULL));
+    exibirMenuPrincipal();
+    return 0;
+}
+
+void exibirMenuPrincipal(void){
+    int opcaoMenuJogador;
+    system("cls");
+    printf("1 - Jogar\n2 - Nivel\n3 - Continuar\n4 - Rank\n5 - Sair\nEscolha uma opcao: ");
+    scanf("%d", &opcaoMenuJogador);
+    switch(opcaoMenuJogador){
+    case 1:
+        jogarJogoMemoria();
+        break;
+    case 2:
+        escolherNivelJogo();
+        break;
+    case 3:
+        break;
+    case 4:
+        break;
+    case 5:
+        exit(0);
+        break;
+    default: 
+        printf("Escolha invalida");
+        break;
+    }
+    exibirMenuPrincipal();
+}
+
+void jogarJogoMemoria(){
+    int tentativasJogador=0;
     inicializarTabuleiroCartas();
     inicializarTabuleiroPosicoes();
-    do{
+    while(contarRepeticoesMatriz(tabuleiroPosicoes, 0)<(TAMANHO_TABULEIRO*TAMANHO_TABULEIRO)){
         escolherCarta();
-    } while(1==1);
-    return 0;
+        tentativasJogador++;
+    }
+    printf("Tentativas: %d\n", tentativasJogador);
+    system("pause");
+}
+
+void escolherNivelJogo(void){
+    int opcaoNivelJogador;
+    system("cls");
+    printf("1 - Facil\n2 - Medio\n3 - Dificil\nEscolha um nivel: ");
+    scanf("%d", &opcaoNivelJogador);
 }
 
 void inicializarTabuleiroCartas(){
@@ -44,7 +88,7 @@ int gerarSimboloValido(){
     int simboloAleatorio;
     do{
         simboloAleatorio=gerarSimboloAleatorio();
-    }while(contarRepeticoesTabuleiro(simboloAleatorio)>=2); //2 é a quantidade de vezes que um numero deve se repetir
+    }while(contarRepeticoesMatriz(tabuleiroCartas, simboloAleatorio)>=2); //2 é a quantidade de vezes que um numero deve se repetir
     return simboloAleatorio;
 }
 
@@ -61,11 +105,11 @@ int gerarNumeroAleatorio(int menorNumeroAleatorio, int maiorNumeroAleatorio){
     return menorNumeroAleatorio+rand()%(maiorNumeroAleatorio-menorNumeroAleatorio+1);
 }
 
-int contarRepeticoesTabuleiro(int simboloProcurado){
+int contarRepeticoesMatriz(int matriz[][TAMANHO_TABULEIRO], int simboloProcurado){
     int count=0;
     for(int i=0; i<TAMANHO_TABULEIRO; i++){
         for(int j=0; j<TAMANHO_TABULEIRO; j++){
-            if(tabuleiroCartas[i][j]==simboloProcurado){
+            if(matriz[i][j]==simboloProcurado){
                 count++;
             }
         }
@@ -81,11 +125,10 @@ void inicializarTabuleiroPosicoes(){
     }
 }
 
-void escolherCarta(){
+void escolherCarta(){ //Refatorar
     int primeiraCartaEscolhida;
     int segundaCartaEscolhida;
     do{
-        Sleep(1000);
         system("cls");
         exibirCartasTabuleiro(0, 0);
         printf("Escolha a primeira carta: ");
@@ -119,29 +162,26 @@ int verificarCartasEscolhidas(int primeiraCartaEscolhida, int segundaCartaEscolh
     int colunaSegundaCartaEscolhida=calcularColunaEscolhida(segundaCartaEscolhida);
     if(primeiraCartaEscolhida==segundaCartaEscolhida){
         printf("A mesma carta foi escolhida duas vezes\n");
-        system("pause");
-        return 0;
     }
-    if(primeiraCartaEscolhida<POSICAO_MENOR_CARTA || segundaCartaEscolhida<POSICAO_MENOR_CARTA){
-        printf("Essa posicao nao existe\n");
-        system("pause");
-        return 0;
+    else if(primeiraCartaEscolhida<POSICAO_MENOR_CARTA || segundaCartaEscolhida<POSICAO_MENOR_CARTA){
+        printf("Essa carta nao existe\n");
     }
-    if(linhaPrimeiraCartaEscolhida>=TAMANHO_TABULEIRO || colunaPrimeiraCartaEscolhida>=TAMANHO_TABULEIRO || linhaSegundaCartaEscolhida>=TAMANHO_TABULEIRO || colunaSegundaCartaEscolhida>=TAMANHO_TABULEIRO){
-        printf("Essa posicao nao existe\n");
-        system("pause");
-        return 0;
+    else if(linhaPrimeiraCartaEscolhida>=TAMANHO_TABULEIRO || colunaPrimeiraCartaEscolhida>=TAMANHO_TABULEIRO || linhaSegundaCartaEscolhida>=TAMANHO_TABULEIRO || colunaSegundaCartaEscolhida>=TAMANHO_TABULEIRO){
+        printf("Essa carta nao existe\n");
     }
-    if(tabuleiroPosicoes[linhaPrimeiraCartaEscolhida][colunaPrimeiraCartaEscolhida]==0 || tabuleiroPosicoes[linhaSegundaCartaEscolhida][colunaSegundaCartaEscolhida]==0){
-        printf("Essa posicao ja foi escolhida\n");        
-        system("pause");
-        return 0;
+    else if(tabuleiroPosicoes[linhaPrimeiraCartaEscolhida][colunaPrimeiraCartaEscolhida]==0 || tabuleiroPosicoes[linhaSegundaCartaEscolhida][colunaSegundaCartaEscolhida]==0){
+        printf("Essa carta ja foi revelada\n");        
     }
-    if(tabuleiroCartas[linhaPrimeiraCartaEscolhida][colunaPrimeiraCartaEscolhida]==tabuleiroCartas[linhaSegundaCartaEscolhida][colunaSegundaCartaEscolhida]){
+    else if(tabuleiroCartas[linhaPrimeiraCartaEscolhida][colunaPrimeiraCartaEscolhida]==tabuleiroCartas[linhaSegundaCartaEscolhida][colunaSegundaCartaEscolhida]){
         tabuleiroPosicoes[linhaPrimeiraCartaEscolhida][colunaPrimeiraCartaEscolhida]=0;
         tabuleiroPosicoes[linhaSegundaCartaEscolhida][colunaSegundaCartaEscolhida]=0;
-        return 1;
+        return 1; //Em caso de acerto
     }
+    else{
+        return 1; //Em caso de erro
+    }
+    system("pause");
+    return 0; //Entrada de cartas invalidas
 }
 
 int calcularLinhaEscolhida(int posicaoEscolhida){
