@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <time.h> //Para o srand
 #include <windows.h> //Para o Sleep
+//#include <math.h>
 
 #define CODIGO_ASCII_A 65
 #define POSICAO_MENOR_CARTA 11
@@ -35,6 +36,7 @@ int verificarCartasEscolhidas(int primeiraCartaEscolhida, int segundaCartaEscolh
 int calcularQuantidadeRegistros(FILE *fp);
 void escreverArquivosPontuacao(int pontuacaoJogador);
 void organizarRankScore(void);
+int continuarPartida(void);
 
 int main(void){
     srand(time(NULL));
@@ -51,11 +53,14 @@ int exibirMenuPrincipal(void){
     switch(opcaoMenuJogador){
         case 1:
             escreverArquivosPontuacao(jogarJogoMemoria());
+            fclose(tabuleiro);
             break;
         case 2:
             escolherNivelJogo();
             break;
         case 3:
+            escreverArquivosPontuacao(continuarPartida());
+            fclose(tabuleiro);
             break;
         case 4:
             exibirRank();
@@ -344,4 +349,18 @@ void organizarRankScore(void){
 int calcularQuantidadeRegistros(FILE *fp){
     fseek(fp, 0, SEEK_END);
     return ftell(fp)/((TAMANHO_CHAR*11)+TAMANHO_INT);
+}
+
+int continuarPartida(void){
+    int tentativasJogador=0;
+    identificarJogador();
+    tabuleiro=fopen(nomeJogadorAtual, "r+b");
+    //tamanhoTabuleiro=sqrt((ftell(tabuleiro)/TAMANHO_INT)/2);
+    while(contarZerosTabuleiro()<(tamanhoTabuleiro*tamanhoTabuleiro)){
+        escolherCarta();
+        tentativasJogador++;
+    }
+    printf("\nTentativas: %d\n\n", tentativasJogador);
+    system("pause");
+    return tentativasJogador;
 }
