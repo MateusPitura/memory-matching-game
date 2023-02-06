@@ -3,7 +3,7 @@
 #include <time.h> //Para o srand
 #include <windows.h> //Para o Sleep
 
-#define TAMANHO_TABULEIRO 2
+#define TAMANHO_TABULEIRO 4
 #define CODIGO_ASCII_A 65
 #define POSICAO_MENOR_CARTA 11
 #define TAMANHO_INT sizeof(int)
@@ -109,6 +109,8 @@ void identificarJogador(void){
 
 void criarArquivoJogador(void){
     tabuleiro=fopen(nomeJogadorAtual, "a+b");
+    fclose(tabuleiro);
+    tabuleiro=fopen(nomeJogadorAtual, "r+b");
     if(tabuleiro==NULL){
         exit(1);
     }
@@ -135,13 +137,18 @@ void inicializarTabuleiroPosicoes(){
 void inicializarTabuleiroCartas(){
     int i, j;
     int simboloValido;
+    int posicaoGerada;
     fseek(tabuleiro, 0, SEEK_SET);
     for(i=0; i<TAMANHO_TABULEIRO; i++){
         for(j=0; j<TAMANHO_TABULEIRO; j++){
             simboloValido=gerarSimboloValido();
+            printf("Simbolo: %d\n", simboloValido);
+            posicaoGerada=((i+1)*10)+(j+1);
             fwrite(&simboloValido, TAMANHO_INT, 1, tabuleiro);
+            fwrite(&posicaoGerada, TAMANHO_INT, 1, tabuleiro);
         }
     }
+    system("pause");
 }
 
 int gerarSimboloValido(){
@@ -176,6 +183,7 @@ int contarRepeticoesTabuleiro(int simboloProcurado){
             if(simboloEncontrado==simboloProcurado){
                 count++;
             }
+            fread(&simboloEncontrado, TAMANHO_INT, 1, tabuleiro);
         }
     }
     return count;
@@ -184,9 +192,13 @@ int contarRepeticoesTabuleiro(int simboloProcurado){
 int contarZerosTabuleiro(){
     int count=0;
     int i, j;
+    int posicaoIdentificada;
+    fseek(tabuleiro, 0, SEEK_SET);
     for(i=0; i<TAMANHO_TABULEIRO; i++){
         for(j=0; j<TAMANHO_TABULEIRO; j++){
-            if(tabuleiroPosicoes[i][j]==0){
+            fread(&posicaoIdentificada, TAMANHO_INT, 1, tabuleiro);
+            fread(&posicaoIdentificada, TAMANHO_INT, 1, tabuleiro);
+            if(posicaoIdentificada==0){
                 count++;
             }
         }
@@ -213,15 +225,17 @@ void escolherCarta(){
 void exibirCartasEscolhidas(int primeiraCartaEscolhida, int segundaCartaEscolhida){
     int i, j;
     int cartaLida;
+    int posicaoLida;
     fseek(tabuleiro, 0, SEEK_SET);
     for(i=0; i<TAMANHO_TABULEIRO; i++){
         for(j=0; j<TAMANHO_TABULEIRO; j++){
             fread(&cartaLida, TAMANHO_INT, 1, tabuleiro);
-            if(tabuleiroPosicoes[i][j]==primeiraCartaEscolhida || tabuleiroPosicoes[i][j]==segundaCartaEscolhida || tabuleiroPosicoes[i][j]==0){
+            fread(&posicaoLida, TAMANHO_INT, 1, tabuleiro);
+            if(posicaoLida==primeiraCartaEscolhida || posicaoLida==segundaCartaEscolhida || posicaoLida==0){
                 printf("%5c", cartaLida);
             }
             else{
-                printf("%5d", tabuleiroPosicoes[i][j]);
+                printf("%5d", posicaoLida);
             }
         }
         printf("\n");
@@ -231,15 +245,17 @@ void exibirCartasEscolhidas(int primeiraCartaEscolhida, int segundaCartaEscolhid
 void exibirTabuleiro(){
     int i, j;
     int cartaLida;
+    int posicaoLida;
     fseek(tabuleiro, 0, SEEK_SET);
     for(i=0; i<TAMANHO_TABULEIRO; i++){
         for(j=0; j<TAMANHO_TABULEIRO; j++){
             fread(&cartaLida, TAMANHO_INT, 1, tabuleiro);
-            if(tabuleiroPosicoes[i][j]==0){
+            fread(&posicaoLida, TAMANHO_INT, 1, tabuleiro);
+            if(posicaoLida==0){
                 printf("%5c", cartaLida);
             }
             else{
-                printf("%5d", tabuleiroPosicoes[i][j]);
+                printf("%5d", posicaoLida);
             }
         }
         printf("\n");
@@ -253,10 +269,15 @@ int verificarCartasEscolhidas(int primeiraCartaEscolhida, int segundaCartaEscolh
     int colunaSegundaCartaEscolhida=calcularColunaEscolhida(segundaCartaEscolhida);
     int primeiraCartaLida;
     int segundaCartaLida;
-    fseek(tabuleiro, TAMANHO_INT*((linhaPrimeiraCartaEscolhida*TAMANHO_TABULEIRO)+colunaPrimeiraCartaEscolhida), SEEK_SET);
+    int primeiraPosicaoLida;
+    int segundaPosicaoLinda;
+    int variavelComZero=0;
+    fseek(tabuleiro, TAMANHO_INT*((linhaPrimeiraCartaEscolhida*TAMANHO_TABULEIRO)+colunaPrimeiraCartaEscolhida)*2, SEEK_SET);
     fread(&primeiraCartaLida, TAMANHO_INT, 1, tabuleiro);
-    fseek(tabuleiro, TAMANHO_INT*((linhaSegundaCartaEscolhida*TAMANHO_TABULEIRO)+colunaSegundaCartaEscolhida), SEEK_SET);
+    fread(&primeiraPosicaoLida, TAMANHO_INT, 1, tabuleiro);
+    fseek(tabuleiro, TAMANHO_INT*((linhaSegundaCartaEscolhida*TAMANHO_TABULEIRO)+colunaSegundaCartaEscolhida)*2, SEEK_SET);
     fread(&segundaCartaLida, TAMANHO_INT, 1, tabuleiro);
+    fread(&segundaPosicaoLinda, TAMANHO_INT, 1, tabuleiro);
     if(primeiraCartaEscolhida==segundaCartaEscolhida){
         printf("A mesma carta foi escolhida duas vezes\n");
     }
@@ -266,12 +287,14 @@ int verificarCartasEscolhidas(int primeiraCartaEscolhida, int segundaCartaEscolh
     else if(linhaPrimeiraCartaEscolhida>=TAMANHO_TABULEIRO || colunaPrimeiraCartaEscolhida>=TAMANHO_TABULEIRO || linhaSegundaCartaEscolhida>=TAMANHO_TABULEIRO || colunaSegundaCartaEscolhida>=TAMANHO_TABULEIRO){
         printf("Essa carta nao existe\n");
     }
-    else if(tabuleiroPosicoes[linhaPrimeiraCartaEscolhida][colunaPrimeiraCartaEscolhida]==0 || tabuleiroPosicoes[linhaSegundaCartaEscolhida][colunaSegundaCartaEscolhida]==0){
+    else if(primeiraPosicaoLida==0 || segundaPosicaoLinda==0){
         printf("Essa carta ja foi revelada\n");        
     }
     else if(primeiraCartaLida==segundaCartaLida){
-        tabuleiroPosicoes[linhaPrimeiraCartaEscolhida][colunaPrimeiraCartaEscolhida]=0;
-        tabuleiroPosicoes[linhaSegundaCartaEscolhida][colunaSegundaCartaEscolhida]=0;
+        fseek(tabuleiro, TAMANHO_INT*((linhaPrimeiraCartaEscolhida*TAMANHO_TABULEIRO)+colunaPrimeiraCartaEscolhida)*2+TAMANHO_INT, SEEK_SET);
+        fwrite(&variavelComZero, TAMANHO_INT, 1, tabuleiro);
+        fseek(tabuleiro, TAMANHO_INT*((linhaSegundaCartaEscolhida*TAMANHO_TABULEIRO)+colunaSegundaCartaEscolhida)*2+TAMANHO_INT, SEEK_SET);
+        fwrite(&variavelComZero, TAMANHO_INT, 1, tabuleiro);
         return 1; //Em caso de acerto
     }
     else{
