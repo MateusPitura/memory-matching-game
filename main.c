@@ -9,10 +9,9 @@
 #define TAMANHO_INT sizeof(int)
 #define TAMANHO_CHAR sizeof(char)
 
-int tabuleiroCartas[TAMANHO_TABULEIRO][TAMANHO_TABULEIRO]; //Inicializa tudo com zero
 int tabuleiroPosicoes[TAMANHO_TABULEIRO][TAMANHO_TABULEIRO];
 char nomeJogadorAtual[11];
-FILE *arquivoInformacoesPartida;
+FILE *tabuleiro;
 
 int exibirMenuPrincipal(void);
 int jogarJogoMemoria(void);
@@ -38,6 +37,7 @@ int calcularColunaEscolhida(int posicaoEscolhida);
 int verificarCartasEscolhidas(int primeiraCartaEscolhida, int segundaCartaEscolhida);
 int calcularQuantidadeRegistros(FILE *fp);
 void escreverArquivosPontuacao(int pontuacaoJogador);
+void organizarRankScore(void);
 
 int main(void){
     srand(time(NULL));
@@ -108,18 +108,16 @@ void identificarJogador(void){
 }
 
 void criarArquivoJogador(void){
-    arquivoInformacoesPartida=fopen(nomeJogadorAtual, "a+b");
-    if(arquivoInformacoesPartida==NULL){
+    tabuleiro=fopen(nomeJogadorAtual, "a+b");
+    if(tabuleiro==NULL){
         exit(1);
     }
-    fclose(arquivoInformacoesPartida);
 }
 
 void zerarTabuleiros(void){
     int i, j;
     for(i=0; i<TAMANHO_TABULEIRO; i++){
         for(j=0; j<TAMANHO_TABULEIRO; j++){
-            tabuleiroCartas[i][j]=0;
             tabuleiroPosicoes[i][j]=0;
         }
     }
@@ -136,9 +134,12 @@ void inicializarTabuleiroPosicoes(){
 
 void inicializarTabuleiroCartas(){
     int i, j;
+    int simboloValido;
+    fseek(tabuleiro, 0, SEEK_SET);
     for(i=0; i<TAMANHO_TABULEIRO; i++){
         for(j=0; j<TAMANHO_TABULEIRO; j++){
-            tabuleiroCartas[i][j]=gerarSimboloValido();
+            simboloValido=gerarSimboloValido();
+            fwrite(&simboloValido, TAMANHO_INT, 1, tabuleiro);
         }
     }
 }
@@ -167,9 +168,12 @@ int gerarNumeroAleatorio(int menorNumeroAleatorio, int maiorNumeroAleatorio){
 int contarRepeticoesTabuleiro(int simboloProcurado){
     int count=0;
     int i, j;
+    int simboloEncontrado;
+    fseek(tabuleiro, 0, SEEK_SET);
     for(i=0; i<TAMANHO_TABULEIRO; i++){
         for(j=0; j<TAMANHO_TABULEIRO; j++){
-            if(tabuleiroCartas[i][j]==simboloProcurado){
+            fread(&simboloEncontrado, TAMANHO_INT, 1, tabuleiro);
+            if(simboloEncontrado==simboloProcurado){
                 count++;
             }
         }
@@ -208,10 +212,13 @@ void escolherCarta(){
 
 void exibirCartasEscolhidas(int primeiraCartaEscolhida, int segundaCartaEscolhida){
     int i, j;
+    int cartaLida;
+    fseek(tabuleiro, 0, SEEK_SET);
     for(i=0; i<TAMANHO_TABULEIRO; i++){
         for(j=0; j<TAMANHO_TABULEIRO; j++){
+            fread(&cartaLida, TAMANHO_INT, 1, tabuleiro);
             if(tabuleiroPosicoes[i][j]==primeiraCartaEscolhida || tabuleiroPosicoes[i][j]==segundaCartaEscolhida || tabuleiroPosicoes[i][j]==0){
-                printf("%5c", tabuleiroCartas[i][j]);
+                printf("%5c", cartaLida);
             }
             else{
                 printf("%5d", tabuleiroPosicoes[i][j]);
@@ -223,10 +230,13 @@ void exibirCartasEscolhidas(int primeiraCartaEscolhida, int segundaCartaEscolhid
 
 void exibirTabuleiro(){
     int i, j;
+    int cartaLida;
+    fseek(tabuleiro, 0, SEEK_SET);
     for(i=0; i<TAMANHO_TABULEIRO; i++){
         for(j=0; j<TAMANHO_TABULEIRO; j++){
+            fread(&cartaLida, TAMANHO_INT, 1, tabuleiro);
             if(tabuleiroPosicoes[i][j]==0){
-                printf("%5c", tabuleiroCartas[i][j]);
+                printf("%5c", cartaLida);
             }
             else{
                 printf("%5d", tabuleiroPosicoes[i][j]);
@@ -241,6 +251,12 @@ int verificarCartasEscolhidas(int primeiraCartaEscolhida, int segundaCartaEscolh
     int colunaPrimeiraCartaEscolhida=calcularColunaEscolhida(primeiraCartaEscolhida);
     int linhaSegundaCartaEscolhida=calcularLinhaEscolhida(segundaCartaEscolhida);
     int colunaSegundaCartaEscolhida=calcularColunaEscolhida(segundaCartaEscolhida);
+    int primeiraCartaLida;
+    int segundaCartaLida;
+    fseek(tabuleiro, TAMANHO_INT*((linhaPrimeiraCartaEscolhida*TAMANHO_TABULEIRO)+colunaPrimeiraCartaEscolhida), SEEK_SET);
+    fread(&primeiraCartaLida, TAMANHO_INT, 1, tabuleiro);
+    fseek(tabuleiro, TAMANHO_INT*((linhaSegundaCartaEscolhida*TAMANHO_TABULEIRO)+colunaSegundaCartaEscolhida), SEEK_SET);
+    fread(&segundaCartaLida, TAMANHO_INT, 1, tabuleiro);
     if(primeiraCartaEscolhida==segundaCartaEscolhida){
         printf("A mesma carta foi escolhida duas vezes\n");
     }
@@ -253,7 +269,7 @@ int verificarCartasEscolhidas(int primeiraCartaEscolhida, int segundaCartaEscolh
     else if(tabuleiroPosicoes[linhaPrimeiraCartaEscolhida][colunaPrimeiraCartaEscolhida]==0 || tabuleiroPosicoes[linhaSegundaCartaEscolhida][colunaSegundaCartaEscolhida]==0){
         printf("Essa carta ja foi revelada\n");        
     }
-    else if(tabuleiroCartas[linhaPrimeiraCartaEscolhida][colunaPrimeiraCartaEscolhida]==tabuleiroCartas[linhaSegundaCartaEscolhida][colunaSegundaCartaEscolhida]){
+    else if(primeiraCartaLida==segundaCartaLida){
         tabuleiroPosicoes[linhaPrimeiraCartaEscolhida][colunaPrimeiraCartaEscolhida]=0;
         tabuleiroPosicoes[linhaSegundaCartaEscolhida][colunaSegundaCartaEscolhida]=0;
         return 1; //Em caso de acerto
@@ -282,6 +298,7 @@ void escolherNivelJogo(void){
 }
 
 void exibirRank(void){
+    organizarRankScore();
     system("cls");
     int pontuacaoJogador;
     char nomeJogador[11];
@@ -300,6 +317,10 @@ void exibirRank(void){
     }
     system("pause");
     fclose(rankPontuacaoJogadores);
+}
+
+void organizarRankScore(void){
+
 }
 
 int calcularQuantidadeRegistros(FILE *fp){
