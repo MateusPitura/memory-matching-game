@@ -45,7 +45,7 @@ int main(void){
 int exibirMenuPrincipal(void){
     int opcaoMenuJogador;
     system("cls");
-    printf("1 - Jogar\n2 - Nivel\n3 - Continuar\n4 - Rank\n5 - Sair\nEscolha uma opcao: ");
+    printf("1 - Jogar\n2 - Nivel\n3 - Continuar\n4 - Rank\n5 - Sair\n\nEscolha uma opcao: ");
     scanf("%d", &opcaoMenuJogador);
     fflush(stdin);
     switch(opcaoMenuJogador){
@@ -64,7 +64,7 @@ int exibirMenuPrincipal(void){
             return 0;
             break;
         default: 
-            printf("Escolha invalida");
+            printf("Escolha invalida\n\n");
             system("pause");
             break;
     }
@@ -90,7 +90,7 @@ int jogarJogoMemoria(){
         escolherCarta();
         tentativasJogador++;
     }
-    printf("Tentativas: %d\n", tentativasJogador);
+    printf("\nTentativas: %d\n\n", tentativasJogador);
     system("pause");
     return tentativasJogador;
 }
@@ -103,9 +103,9 @@ void identificarJogador(void){
 }
 
 void criarArquivoJogador(void){
-    tabuleiro=fopen(nomeJogadorAtual, "a+b");
+    tabuleiro=fopen(nomeJogadorAtual, "a+b"); //Cria caso não exista
     fclose(tabuleiro);
-    tabuleiro=fopen(nomeJogadorAtual, "r+b");
+    tabuleiro=fopen(nomeJogadorAtual, "r+b"); //O a+b adiciona apenas no final, é necessáiro o r+b para sobreescrever
     if(tabuleiro==NULL){
         exit(1);
     }
@@ -185,14 +185,12 @@ void escolherCarta(){
     int primeiraCartaEscolhida;
     int segundaCartaEscolhida;
     do{
-        system("cls");
         exibirTabuleiro();
-        printf("Escolha a primeira carta: ");
+        printf("\nEscolha a primeira carta: ");
         scanf("%d", &primeiraCartaEscolhida);
-        printf("Escolha a segunda carta: ");
+        printf("\nEscolha a segunda carta: ");
         scanf("%d", &segundaCartaEscolhida);
     }while(verificarCartasEscolhidas(primeiraCartaEscolhida, segundaCartaEscolhida)==0);
-    system("cls");
     exibirCartasEscolhidas(primeiraCartaEscolhida, segundaCartaEscolhida);
     Sleep(1000);
 }
@@ -202,6 +200,8 @@ void exibirCartasEscolhidas(int primeiraCartaEscolhida, int segundaCartaEscolhid
     int cartaLida;
     int posicaoLida;
     fseek(tabuleiro, 0, SEEK_SET);
+    system("cls");
+    printf("\n");
     for(i=0; i<tamanhoTabuleiro; i++){
         for(j=0; j<tamanhoTabuleiro; j++){
             fread(&cartaLida, TAMANHO_INT, 1, tabuleiro);
@@ -222,6 +222,8 @@ void exibirTabuleiro(){
     int cartaLida;
     int posicaoLida;
     fseek(tabuleiro, 0, SEEK_SET);
+    system("cls");
+    printf("\n");
     for(i=0; i<tamanhoTabuleiro; i++){
         for(j=0; j<tamanhoTabuleiro; j++){
             fread(&cartaLida, TAMANHO_INT, 1, tabuleiro);
@@ -275,6 +277,7 @@ int verificarCartasEscolhidas(int primeiraCartaEscolhida, int segundaCartaEscolh
     else{
         return 1; //Em caso de erro
     }
+    printf("\n");
     system("pause");
     return 0; //Entrada de cartas invalidas
 }
@@ -290,7 +293,7 @@ int calcularColunaEscolhida(int posicaoEscolhida){
 void escolherNivelJogo(void){
     int opcaoNivelJogador;
     system("cls");
-    printf("1 - Facil\n2 - Medio\n3 - Dificil\nEscolha um nivel: ");
+    printf("1 - Facil\n2 - Medio\n3 - Dificil\n\nEscolha um nivel: ");
     scanf("%d", &opcaoNivelJogador);
     fflush(stdin);
     switch(opcaoNivelJogador){
@@ -303,7 +306,10 @@ void escolherNivelJogo(void){
         case 3:
             tamanhoTabuleiro=6;
             break;
-        default: printf("Escolha invalida"); break;
+        default: 
+            printf("Escolha invalida\n\n"); 
+            system("pause");
+            break;
     }
 }
 
@@ -319,12 +325,14 @@ void exibirRank(void){
     } 
     int quantidadeRegistrosJogadores=calcularQuantidadeRegistros(rankPontuacaoJogadores);
     fseek(rankPontuacaoJogadores, 0, SEEK_SET);
+    printf("RANK DOS SCORES DOS JOGADORES\n\n");
     for(i=0; i<quantidadeRegistrosJogadores; i++){
         fread(&pontuacaoJogador, TAMANHO_INT, 1, rankPontuacaoJogadores);
         fread(nomeJogador, TAMANHO_CHAR, 11, rankPontuacaoJogadores);
         printf("Pontos: %-5d", pontuacaoJogador);
         printf("Nome: %10s\n", nomeJogador);
     }
+    printf("\n");
     system("pause");
     fclose(rankPontuacaoJogadores);
 }
