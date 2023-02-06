@@ -3,32 +3,43 @@
 #include <time.h> //Para o srand
 #include <windows.h> //Para o Sleep
 
-#define TAMANHO_TABULEIRO 4
+#define TAMANHO_TABULEIRO 2
 #define CODIGO_ASCII_A 65
 #define POSICAO_MENOR_CARTA 11
+#define TAMANHO_INT sizeof(int)
+#define TAMANHO_CHAR sizeof(char)
 
-int tabuleiroCartas[TAMANHO_TABULEIRO][TAMANHO_TABULEIRO]={0}; //Inicializa tudo com zero
+int tabuleiroCartas[TAMANHO_TABULEIRO][TAMANHO_TABULEIRO]; //Inicializa tudo com zero
 int tabuleiroPosicoes[TAMANHO_TABULEIRO][TAMANHO_TABULEIRO];
+char nomeJogadorAtual[11];
+FILE *arquivoInformacoesPartida;
 
 int exibirMenuPrincipal(void);
-void jogarJogoMemoria(void);
+int jogarJogoMemoria(void);
+void identificarJogador(void);
+void criarArquivoJogador(void);
+void exibirRank(void);
+void organizarRank(void);
 void escolherNivelJogo(void);
 void inicializarTabuleiroCartas(void);
+void inicializarTabuleiroPosicoes(void);
+void zerarTabuleiros(void);
+void exibirTabuleiro(void);
 int gerarSimboloValido(void);
 int gerarSimboloAleatorio(void);
-int calcularQuantidadeSimbolos(int tamanhoMatriz);
+int calcularQuantidadeSimbolos();
 int gerarNumeroAleatorio(int menorNumeroAleatorio, int maiorNumeroAleatorio);
 int contarRepeticoesTabuleiro(int simboloProcurado);
 int contarZerosTabuleiro(void);
-void inicializarTabuleiroPosicoes(void);
 void escolherCarta(void);
-void exibirCartasTabuleiro(int primeiraCartaEscolhida, int segundaCartaEscolhida);
+void exibirCartasEscolhidas(int primeiraCartaEscolhida, int segundaCartaEscolhida);
 int calcularLinhaEscolhida(int posicaoEscolhida);
 int calcularColunaEscolhida(int posicaoEscolhida);
 int verificarCartasEscolhidas(int primeiraCartaEscolhida, int segundaCartaEscolhida);
+int calcularQuantidadeRegistros(FILE *fp);
+void escreverArquivosPontuacao(int pontuacaoJogador);
 
 int main(void){
-	int i;
     srand(time(NULL));
     while(exibirMenuPrincipal()==1);
     return 0;
@@ -41,46 +52,86 @@ int exibirMenuPrincipal(void){
     scanf("%d", &opcaoMenuJogador);
     fflush(stdin);
     switch(opcaoMenuJogador){
-    case 1:
-        jogarJogoMemoria();
-        break;
-    case 2:
-        escolherNivelJogo();
-        break;
-    case 3:
-        break;
-    case 4:
-        break;
-    case 5:
-        return 0;
-        break;
-    default: 
-        printf("Escolha invalida");
-        system("pause");
-        break;
+        case 1:
+            escreverArquivosPontuacao(jogarJogoMemoria());
+            break;
+        case 2:
+            escolherNivelJogo();
+            break;
+        case 3:
+            break;
+        case 4:
+            exibirRank();
+            break;
+        case 5:
+            return 0;
+            break;
+        default: 
+            printf("Escolha invalida");
+            system("pause");
+            break;
     }
     return 1;
 }
 
-void jogarJogoMemoria(){
+void escreverArquivosPontuacao(int pontuacaoJogador){
+    FILE *rankPontuacaoJogadores=fopen("pontuacaoJogadores.txt", "a+b");
+    if(rankPontuacaoJogadores==NULL){
+        exit(1);
+    } 
+    fwrite(&pontuacaoJogador, TAMANHO_INT, 1, rankPontuacaoJogadores);
+    fwrite(nomeJogadorAtual, TAMANHO_CHAR, 11, rankPontuacaoJogadores);
+    fclose(rankPontuacaoJogadores);
+}
+
+int jogarJogoMemoria(){
     int tentativasJogador=0;
-    inicializarTabuleiroCartas();
+    identificarJogador();
+    criarArquivoJogador();
+    zerarTabuleiros();
     inicializarTabuleiroPosicoes();
+    inicializarTabuleiroCartas();
     while(contarZerosTabuleiro()<(TAMANHO_TABULEIRO*TAMANHO_TABULEIRO)){
         escolherCarta();
         tentativasJogador++;
     }
     printf("Tentativas: %d\n", tentativasJogador);
     system("pause");
+    return tentativasJogador;
 }
 
-void escolherNivelJogo(void){
-    int opcaoNivelJogador;
-    int i;
+void identificarJogador(void){
     system("cls");
-    printf("1 - Facil\n2 - Medio\n3 - Dificil\nEscolha um nivel: ");
-    scanf("%d", &opcaoNivelJogador);
+    printf("Informe seu nickname: ");
+    scanf("%s", nomeJogadorAtual);
     fflush(stdin);
+}
+
+void criarArquivoJogador(void){
+    arquivoInformacoesPartida=fopen(nomeJogadorAtual, "a+b");
+    if(arquivoInformacoesPartida==NULL){
+        exit(1);
+    }
+    fclose(arquivoInformacoesPartida);
+}
+
+void zerarTabuleiros(void){
+    int i, j;
+    for(i=0; i<TAMANHO_TABULEIRO; i++){
+        for(j=0; j<TAMANHO_TABULEIRO; j++){
+            tabuleiroCartas[i][j]=0;
+            tabuleiroPosicoes[i][j]=0;
+        }
+    }
+}
+
+void inicializarTabuleiroPosicoes(){
+    int i, j;
+    for(i=0; i<TAMANHO_TABULEIRO; i++){
+        for(j=0; j<TAMANHO_TABULEIRO; j++){
+            tabuleiroPosicoes[i][j]=((i+1)*10)+(j+1);
+        }
+    }
 }
 
 void inicializarTabuleiroCartas(){
@@ -101,12 +152,12 @@ int gerarSimboloValido(){
 }
 
 int gerarSimboloAleatorio(){
-    int quantidadeSimbolosDiferentes=calcularQuantidadeSimbolos(TAMANHO_TABULEIRO);
+    int quantidadeSimbolosDiferentes=calcularQuantidadeSimbolos();
     return gerarNumeroAleatorio(CODIGO_ASCII_A, CODIGO_ASCII_A+quantidadeSimbolosDiferentes-1); //-1 pois o A também entra na contagem
 }
 
-int calcularQuantidadeSimbolos(int tamanhoMatriz){
-    return (tamanhoMatriz*tamanhoMatriz)/2;
+int calcularQuantidadeSimbolos(){
+    return (TAMANHO_TABULEIRO*TAMANHO_TABULEIRO)/2;
 }
 
 int gerarNumeroAleatorio(int menorNumeroAleatorio, int maiorNumeroAleatorio){
@@ -139,36 +190,42 @@ int contarZerosTabuleiro(){
     return count;
 }
 
-void inicializarTabuleiroPosicoes(){
-    int i, j;
-    for(i=0; i<TAMANHO_TABULEIRO; i++){
-        for(j=0; j<TAMANHO_TABULEIRO; j++){
-            tabuleiroPosicoes[i][j]=((i+1)*10)+(j+1);
-        }
-    }
-}
-
-void escolherCarta(){ //Refatorar
+void escolherCarta(){
     int primeiraCartaEscolhida;
     int segundaCartaEscolhida;
     do{
         system("cls");
-        exibirCartasTabuleiro(0, 0);
+        exibirTabuleiro();
         printf("Escolha a primeira carta: ");
         scanf("%d", &primeiraCartaEscolhida);
         printf("Escolha a segunda carta: ");
         scanf("%d", &segundaCartaEscolhida);
     }while(verificarCartasEscolhidas(primeiraCartaEscolhida, segundaCartaEscolhida)==0);
     system("cls");
-    exibirCartasTabuleiro(primeiraCartaEscolhida, segundaCartaEscolhida);
+    exibirCartasEscolhidas(primeiraCartaEscolhida, segundaCartaEscolhida);
     Sleep(1000);
 }
 
-void exibirCartasTabuleiro(int primeiraCartaEscolhida, int segundaCartaEscolhida){
+void exibirCartasEscolhidas(int primeiraCartaEscolhida, int segundaCartaEscolhida){
     int i, j;
     for(i=0; i<TAMANHO_TABULEIRO; i++){
         for(j=0; j<TAMANHO_TABULEIRO; j++){
             if(tabuleiroPosicoes[i][j]==primeiraCartaEscolhida || tabuleiroPosicoes[i][j]==segundaCartaEscolhida || tabuleiroPosicoes[i][j]==0){
+                printf("%5c", tabuleiroCartas[i][j]);
+            }
+            else{
+                printf("%5d", tabuleiroPosicoes[i][j]);
+            }
+        }
+        printf("\n");
+    }
+}
+
+void exibirTabuleiro(){
+    int i, j;
+    for(i=0; i<TAMANHO_TABULEIRO; i++){
+        for(j=0; j<TAMANHO_TABULEIRO; j++){
+            if(tabuleiroPosicoes[i][j]==0){
                 printf("%5c", tabuleiroCartas[i][j]);
             }
             else{
@@ -214,4 +271,38 @@ int calcularLinhaEscolhida(int posicaoEscolhida){
 
 int calcularColunaEscolhida(int posicaoEscolhida){
     return (posicaoEscolhida-((posicaoEscolhida/10)*10))-1; //Ex.: 34/10=3 (po ser int a parte decimal é descartada). 3*10=30. 34-30=4. -1 pois a matriz começa em 0
+}
+
+void escolherNivelJogo(void){
+    int opcaoNivelJogador;
+    system("cls");
+    printf("1 - Facil\n2 - Medio\n3 - Dificil\nEscolha um nivel: ");
+    scanf("%d", &opcaoNivelJogador);
+    fflush(stdin);
+}
+
+void exibirRank(void){
+    system("cls");
+    int pontuacaoJogador;
+    char nomeJogador[11];
+    int i;
+    FILE *rankPontuacaoJogadores=fopen("pontuacaoJogadores.txt", "a+b");
+    if(rankPontuacaoJogadores==NULL){
+        exit(1);
+    } 
+    int quantidadeRegistrosJogadores=calcularQuantidadeRegistros(rankPontuacaoJogadores);
+    fseek(rankPontuacaoJogadores, 0, SEEK_SET);
+    for(i=0; i<quantidadeRegistrosJogadores; i++){
+        fread(&pontuacaoJogador, TAMANHO_INT, 1, rankPontuacaoJogadores);
+        fread(nomeJogador, TAMANHO_CHAR, 11, rankPontuacaoJogadores);
+        printf("Pontos: %-5d", pontuacaoJogador);
+        printf("Nome: %10s\n", nomeJogador);
+    }
+    system("pause");
+    fclose(rankPontuacaoJogadores);
+}
+
+int calcularQuantidadeRegistros(FILE *fp){
+    fseek(fp, 0, SEEK_END);
+    return ftell(fp)/((TAMANHO_CHAR*11)+TAMANHO_INT);
 }
