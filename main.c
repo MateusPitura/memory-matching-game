@@ -9,7 +9,6 @@
 #define TAMANHO_INT sizeof(int)
 #define TAMANHO_CHAR sizeof(char)
 
-int tabuleiroPosicoes[TAMANHO_TABULEIRO][TAMANHO_TABULEIRO];
 char nomeJogadorAtual[11];
 FILE *tabuleiro;
 
@@ -21,8 +20,6 @@ void exibirRank(void);
 void organizarRank(void);
 void escolherNivelJogo(void);
 void inicializarTabuleiroCartas(void);
-void inicializarTabuleiroPosicoes(void);
-void zerarTabuleiros(void);
 void exibirTabuleiro(void);
 int gerarSimboloValido(void);
 int gerarSimboloAleatorio(void);
@@ -88,8 +85,6 @@ int jogarJogoMemoria(){
     int tentativasJogador=0;
     identificarJogador();
     criarArquivoJogador();
-    zerarTabuleiros();
-    inicializarTabuleiroPosicoes();
     inicializarTabuleiroCartas();
     while(contarZerosTabuleiro()<(TAMANHO_TABULEIRO*TAMANHO_TABULEIRO)){
         escolherCarta();
@@ -116,24 +111,6 @@ void criarArquivoJogador(void){
     }
 }
 
-void zerarTabuleiros(void){
-    int i, j;
-    for(i=0; i<TAMANHO_TABULEIRO; i++){
-        for(j=0; j<TAMANHO_TABULEIRO; j++){
-            tabuleiroPosicoes[i][j]=0;
-        }
-    }
-}
-
-void inicializarTabuleiroPosicoes(){
-    int i, j;
-    for(i=0; i<TAMANHO_TABULEIRO; i++){
-        for(j=0; j<TAMANHO_TABULEIRO; j++){
-            tabuleiroPosicoes[i][j]=((i+1)*10)+(j+1);
-        }
-    }
-}
-
 void inicializarTabuleiroCartas(){
     int i, j;
     int simboloValido;
@@ -142,13 +119,11 @@ void inicializarTabuleiroCartas(){
     for(i=0; i<TAMANHO_TABULEIRO; i++){
         for(j=0; j<TAMANHO_TABULEIRO; j++){
             simboloValido=gerarSimboloValido();
-            printf("Simbolo: %d\n", simboloValido);
             posicaoGerada=((i+1)*10)+(j+1);
             fwrite(&simboloValido, TAMANHO_INT, 1, tabuleiro);
             fwrite(&posicaoGerada, TAMANHO_INT, 1, tabuleiro);
         }
     }
-    system("pause");
 }
 
 int gerarSimboloValido(){
