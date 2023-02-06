@@ -3,12 +3,12 @@
 #include <time.h> //Para o srand
 #include <windows.h> //Para o Sleep
 
-#define TAMANHO_TABULEIRO 4
 #define CODIGO_ASCII_A 65
 #define POSICAO_MENOR_CARTA 11
 #define TAMANHO_INT sizeof(int)
 #define TAMANHO_CHAR sizeof(char)
 
+int tamanhoTabuleiro=4;
 char nomeJogadorAtual[11];
 FILE *tabuleiro;
 
@@ -86,7 +86,7 @@ int jogarJogoMemoria(){
     identificarJogador();
     criarArquivoJogador();
     inicializarTabuleiroCartas();
-    while(contarZerosTabuleiro()<(TAMANHO_TABULEIRO*TAMANHO_TABULEIRO)){
+    while(contarZerosTabuleiro()<(tamanhoTabuleiro*tamanhoTabuleiro)){
         escolherCarta();
         tentativasJogador++;
     }
@@ -116,8 +116,8 @@ void inicializarTabuleiroCartas(){
     int simboloValido;
     int posicaoGerada;
     fseek(tabuleiro, 0, SEEK_SET);
-    for(i=0; i<TAMANHO_TABULEIRO; i++){
-        for(j=0; j<TAMANHO_TABULEIRO; j++){
+    for(i=0; i<tamanhoTabuleiro; i++){
+        for(j=0; j<tamanhoTabuleiro; j++){
             simboloValido=gerarSimboloValido();
             posicaoGerada=((i+1)*10)+(j+1);
             fwrite(&simboloValido, TAMANHO_INT, 1, tabuleiro);
@@ -140,7 +140,7 @@ int gerarSimboloAleatorio(){
 }
 
 int calcularQuantidadeSimbolos(){
-    return (TAMANHO_TABULEIRO*TAMANHO_TABULEIRO)/2;
+    return (tamanhoTabuleiro*tamanhoTabuleiro)/2;
 }
 
 int gerarNumeroAleatorio(int menorNumeroAleatorio, int maiorNumeroAleatorio){
@@ -152,8 +152,8 @@ int contarRepeticoesTabuleiro(int simboloProcurado){
     int i, j;
     int simboloEncontrado;
     fseek(tabuleiro, 0, SEEK_SET);
-    for(i=0; i<TAMANHO_TABULEIRO; i++){
-        for(j=0; j<TAMANHO_TABULEIRO; j++){
+    for(i=0; i<tamanhoTabuleiro; i++){
+        for(j=0; j<tamanhoTabuleiro; j++){
             fread(&simboloEncontrado, TAMANHO_INT, 1, tabuleiro);
             if(simboloEncontrado==simboloProcurado){
                 count++;
@@ -169,8 +169,8 @@ int contarZerosTabuleiro(){
     int i, j;
     int posicaoIdentificada;
     fseek(tabuleiro, 0, SEEK_SET);
-    for(i=0; i<TAMANHO_TABULEIRO; i++){
-        for(j=0; j<TAMANHO_TABULEIRO; j++){
+    for(i=0; i<tamanhoTabuleiro; i++){
+        for(j=0; j<tamanhoTabuleiro; j++){
             fread(&posicaoIdentificada, TAMANHO_INT, 1, tabuleiro);
             fread(&posicaoIdentificada, TAMANHO_INT, 1, tabuleiro);
             if(posicaoIdentificada==0){
@@ -202,8 +202,8 @@ void exibirCartasEscolhidas(int primeiraCartaEscolhida, int segundaCartaEscolhid
     int cartaLida;
     int posicaoLida;
     fseek(tabuleiro, 0, SEEK_SET);
-    for(i=0; i<TAMANHO_TABULEIRO; i++){
-        for(j=0; j<TAMANHO_TABULEIRO; j++){
+    for(i=0; i<tamanhoTabuleiro; i++){
+        for(j=0; j<tamanhoTabuleiro; j++){
             fread(&cartaLida, TAMANHO_INT, 1, tabuleiro);
             fread(&posicaoLida, TAMANHO_INT, 1, tabuleiro);
             if(posicaoLida==primeiraCartaEscolhida || posicaoLida==segundaCartaEscolhida || posicaoLida==0){
@@ -222,8 +222,8 @@ void exibirTabuleiro(){
     int cartaLida;
     int posicaoLida;
     fseek(tabuleiro, 0, SEEK_SET);
-    for(i=0; i<TAMANHO_TABULEIRO; i++){
-        for(j=0; j<TAMANHO_TABULEIRO; j++){
+    for(i=0; i<tamanhoTabuleiro; i++){
+        for(j=0; j<tamanhoTabuleiro; j++){
             fread(&cartaLida, TAMANHO_INT, 1, tabuleiro);
             fread(&posicaoLida, TAMANHO_INT, 1, tabuleiro);
             if(posicaoLida==0){
@@ -247,10 +247,10 @@ int verificarCartasEscolhidas(int primeiraCartaEscolhida, int segundaCartaEscolh
     int primeiraPosicaoLida;
     int segundaPosicaoLinda;
     int variavelComZero=0;
-    fseek(tabuleiro, TAMANHO_INT*((linhaPrimeiraCartaEscolhida*TAMANHO_TABULEIRO)+colunaPrimeiraCartaEscolhida)*2, SEEK_SET);
+    fseek(tabuleiro, TAMANHO_INT*((linhaPrimeiraCartaEscolhida*tamanhoTabuleiro)+colunaPrimeiraCartaEscolhida)*2, SEEK_SET);
     fread(&primeiraCartaLida, TAMANHO_INT, 1, tabuleiro);
     fread(&primeiraPosicaoLida, TAMANHO_INT, 1, tabuleiro);
-    fseek(tabuleiro, TAMANHO_INT*((linhaSegundaCartaEscolhida*TAMANHO_TABULEIRO)+colunaSegundaCartaEscolhida)*2, SEEK_SET);
+    fseek(tabuleiro, TAMANHO_INT*((linhaSegundaCartaEscolhida*tamanhoTabuleiro)+colunaSegundaCartaEscolhida)*2, SEEK_SET);
     fread(&segundaCartaLida, TAMANHO_INT, 1, tabuleiro);
     fread(&segundaPosicaoLinda, TAMANHO_INT, 1, tabuleiro);
     if(primeiraCartaEscolhida==segundaCartaEscolhida){
@@ -259,16 +259,16 @@ int verificarCartasEscolhidas(int primeiraCartaEscolhida, int segundaCartaEscolh
     else if(primeiraCartaEscolhida<POSICAO_MENOR_CARTA || segundaCartaEscolhida<POSICAO_MENOR_CARTA){
         printf("Essa carta nao existe\n");
     }
-    else if(linhaPrimeiraCartaEscolhida>=TAMANHO_TABULEIRO || colunaPrimeiraCartaEscolhida>=TAMANHO_TABULEIRO || linhaSegundaCartaEscolhida>=TAMANHO_TABULEIRO || colunaSegundaCartaEscolhida>=TAMANHO_TABULEIRO){
+    else if(linhaPrimeiraCartaEscolhida>=tamanhoTabuleiro || colunaPrimeiraCartaEscolhida>=tamanhoTabuleiro || linhaSegundaCartaEscolhida>=tamanhoTabuleiro || colunaSegundaCartaEscolhida>=tamanhoTabuleiro){
         printf("Essa carta nao existe\n");
     }
     else if(primeiraPosicaoLida==0 || segundaPosicaoLinda==0){
         printf("Essa carta ja foi revelada\n");        
     }
     else if(primeiraCartaLida==segundaCartaLida){
-        fseek(tabuleiro, TAMANHO_INT*((linhaPrimeiraCartaEscolhida*TAMANHO_TABULEIRO)+colunaPrimeiraCartaEscolhida)*2+TAMANHO_INT, SEEK_SET);
+        fseek(tabuleiro, TAMANHO_INT*((linhaPrimeiraCartaEscolhida*tamanhoTabuleiro)+colunaPrimeiraCartaEscolhida)*2+TAMANHO_INT, SEEK_SET);
         fwrite(&variavelComZero, TAMANHO_INT, 1, tabuleiro);
-        fseek(tabuleiro, TAMANHO_INT*((linhaSegundaCartaEscolhida*TAMANHO_TABULEIRO)+colunaSegundaCartaEscolhida)*2+TAMANHO_INT, SEEK_SET);
+        fseek(tabuleiro, TAMANHO_INT*((linhaSegundaCartaEscolhida*tamanhoTabuleiro)+colunaSegundaCartaEscolhida)*2+TAMANHO_INT, SEEK_SET);
         fwrite(&variavelComZero, TAMANHO_INT, 1, tabuleiro);
         return 1; //Em caso de acerto
     }
@@ -293,6 +293,18 @@ void escolherNivelJogo(void){
     printf("1 - Facil\n2 - Medio\n3 - Dificil\nEscolha um nivel: ");
     scanf("%d", &opcaoNivelJogador);
     fflush(stdin);
+    switch(opcaoNivelJogador){
+        case 1:
+            tamanhoTabuleiro=2;
+            break;
+        case 2:
+            tamanhoTabuleiro=4;
+            break;
+        case 3:
+            tamanhoTabuleiro=6;
+            break;
+        default: printf("Escolha invalida"); break;
+    }
 }
 
 void exibirRank(void){
